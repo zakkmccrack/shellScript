@@ -1,0 +1,126 @@
+#functions
+generate_message() {
+    hour=$(date +%H)
+
+    # Definizione dei colori ANSI per Zsh
+    RED="\033[0;31m"
+    GREEN="\033[0;32m"
+    YELLOW="\033[0;33m"
+    BLUE="\033[0;34m"
+    MAGENTA="\033[0;35m"
+    CYAN="\033[0;36m"
+    RESET="\033[0m"  # Reset del colore
+
+    # Messaggi per ogni fascia oraria con colori diversi
+    late_night_msgs=(
+        "${RED}Wth are you doing awake, go to sleep hasshole -_-${RESET}"
+        "${RED}You should be dreaming, not staring at a terminal… (╯︵╰,)${RESET}"
+        "${RED}It's way too late… don't make me tuck you in ( ￣︿￣)${RESET}"
+        "${RED}Sleep deprivation isn't a flex, go to bed! (눈_눈)${RESET}"
+        "${RED}Your pillow misses you, don't be cruel (つ≧▽≦)つ${RESET}"
+        "${RED}Go to bed, or I'll personally turn off your computer ಠ_ಠ${RESET}"
+        "${RED}Still here? Your bed is warm and waiting for you (っ˘ω˘ς )💤${RESET}"
+        "${RED}The stars are watching over you… sleep well, please (✿◕‿◕)${RESET}"
+    )
+
+    morning_msgs=(
+        "${YELLOW}Have you done breakfast? No? Shame on you (¬‿¬)${RESET}"
+        "${YELLOW}Morning! Time to fuel up or you'll regret it later ⊂(￣▽￣)⊃${RESET}"
+        "${YELLOW}No food, no energy. No energy, no life. Go eat. (ノಠ益ಠ)ノ${RESET}"
+        "${YELLOW}Did you sleep well? Or are you a walking zombie? (⊙_◎)${RESET}"
+        "${YELLOW}Mornin’ sunshine! The world says UwU ✨${RESET}"
+        "${YELLOW}Hope you’re feeling rested, if not, go take a nap after coffee (☕˘･ᴗ･˘)${RESET}"
+        "${YELLOW}Wake up, sleepyhead! The universe is waiting for you (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧${RESET}"
+    )
+
+    afternoon_msgs=(
+        "${CYAN}Nothin to do uh? -_- Well, at least you're here.${RESET}"
+        "${CYAN}Youre still alive, right? (o_O)${RESET}"
+        "${CYAN}Go touch some grass, nerd ┐(￣ヘ￣)┌${RESET}"
+        "${CYAN}Workin' hard or hardly workin'? (¬‿¬)${RESET}"
+        "${CYAN}Hope your day's going well… If not, wanna talk? (｡• ᵕ •｡) ❤️${RESET}"
+        "${CYAN}Bored? How about a nap? Or a cookie? Both? 🍪${RESET}"
+        "${CYAN}Take a break, even heroes need to rest (ง’̀-'́)ง${RESET}"
+        "${CYAN}If you’re feeling tired, just close your eyes for a moment… ${RESET}"
+    )
+
+    evening_msgs=(
+        "${MAGENTA}C’mon, go to bed. You need your beauty sleep ( ˘︹˘ )${RESET}"
+        "${MAGENTA}I see you. Still here. Why? Go rest! (*￣3￣)╭${RESET}"
+        "${MAGENTA}You had a long day, right? Be kind to yourself, okay? (っ'ω')っ${RESET}"
+        "${MAGENTA}Don’t make me come over there and force you to sleep ( ಠ_ಠ)${RESET}"
+        "${MAGENTA}You’re still up? You better be cozy at least! (づ￣ ³￣)づ💤${RESET}"
+        "${MAGENTA}Go to bed, sweetheart. You're important. Take care. (✿˶˘ ³˘)~♥${RESET}"
+        "${MAGENTA}If no one told you today: I'm proud of you. Now rest, please. (っ˘з(˘⌣˘ )${RESET}"
+        "${MAGENTA}Nighttime is for dreaming, not stressing. Let go, sleep tight. (◡‿◡✿)${RESET}"
+    )
+
+    # Determina l'array di frasi da usare
+    if [ "$hour" -lt 6 ]; then
+        messages=("${late_night_msgs[@]}")
+    elif [ "$hour" -lt 12 ]; then
+        messages=("${morning_msgs[@]}")
+    elif [ "$hour" -lt 18 ]; then
+        messages=("${afternoon_msgs[@]}")
+    else
+        messages=("${evening_msgs[@]}")
+    fi
+
+    # Seleziona un messaggio casuale e lo stampa
+    random_index=$(( RANDOM % ${#messages[@]} ))
+    echo -e "${messages[$random_index]}"
+}
+
+generate_ctf_info(){
+    echo "Automated file opening methods:
+- py, sql, php, js, json, css, html, txt-> Visual Studio Code
+- pcapng -> wireshark"
+}
+
+#use output
+if [[ $(id -u) -eq 0 ]]; then
+    generate_message
+    PROMPT='%F{red}%B%n@%m%f:%F{magenta}%B%~%f %# '
+    RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
+    export LS_COLORS="di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33"
+    echo -e "This shell is $SHELL and it uses autosuggestions"
+    echo -e "Type update for apt update && apt upgrade"
+    #echo -e "Type ctf for enabling CTF mode and get rady to flag!"
+    source /home/kali/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+else
+    generate_message
+    PROMPT='%F{blue}%B%n@%m%f:%F{magenta}%B%~%f %# '
+    RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
+    export LS_COLORS="di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33"
+    echo -e "This shell is $SHELL and it uses autosuggestions"
+    echo -e "Type update for apt update && apt upgrade"
+    source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+
+#New Alias
+alias update='command sudo apt update && sudo apt upgrade -y'
+alias ctf='command clear && command sudo su'
+
+#file alias
+alias -s txt=code
+alias -s py=code
+alias -s json=code
+alias -s pcapng=wireshark
+alias -s py=code
+alias -s html=code
+alias -s js=code
+alias -s css=code
+
+# usability
+export HISTFILE=~/.zsh_history
+export HISTSIZE=10000
+export SAVEHIST=10000
+setopt append_history
+setopt hist_ignore_dups
+setopt hist_ignore_all_dups
+setopt share_history
+
+# autocomplete
+autoload -Uz compinit
+compinit
