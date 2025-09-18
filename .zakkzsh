@@ -97,6 +97,8 @@
 
     #New Alias
     alias update='command sudo apt update && sudo apt upgrade -y'
+    alias cls='clear'
+    alias clear='clear && generate_message'
     #alias install='command sudo apt install -y' add automated install, pass params
 
 
