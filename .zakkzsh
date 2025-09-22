@@ -1,3 +1,23 @@
+    PROMPT='%F{blue}%B%n@%m%f:%F{magenta}%B%~%f %# '
+    
+    #New Alias
+    alias update='command sudo apt update && sudo apt upgrade -y'
+    alias cls='clear'
+    alias clearNoMessage='clear'
+    alias clearMessage='clear && generate_message'
+    #alias install='command sudo apt install -y' add automated install, pass params
+
+
+    #file alias
+    alias -s txt=code
+    alias -s py=code
+    alias -s json=code
+    alias -s pcapng=wireshark
+    alias -s py=code
+    alias -s html=code
+    alias -s js=code
+    alias -s css=code
+
     #functions
     generate_message() {
         hour=$(date +%H)
@@ -73,44 +93,49 @@
 
     #use output
     if [[ $(id -u) -eq 0 ]]; then
+        clearNoMessage
         generate_message
         PROMPT='%F{red}%B%n@%m%f:%F{magenta}%B%~%f %# '
         RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
         export LS_COLORS="di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33"
         echo -e "This shell is $SHELL and it uses autosuggestions"
         echo -e "Type update for apt update && apt upgrade"
-        source /home/kali/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
     else
+        clearNoMessage
         generate_message
         PROMPT='%F{blue}%B%n@%m%f:%F{magenta}%B%~%f %# '
         RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
         export LS_COLORS="di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33"
         echo -e "This shell is $SHELL and it uses autosuggestions"
         echo -e "Type update for apt update && apt upgrade"
-        source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
     fi
 
-#    unico(){
-#        echo "This is $1."
-#    }
+    unico(){
+        if [[ $1 == "-h" || $1 == "" ]]; then
+            echo "Usage: unico <agent_uuid> <api_key>"
+        elif ! dpkg -s curl &> /dev/null; then
+            echo "curl is not installed"
+        elif ! dpkg -s jq &> /dev/null; then
+            echo "jq is not installed, please install it with: sudo apt install jq -y. Do you want to install it now? (y/n)"
+            read key
+            if [[ $key == "y" || $key == "Y" ]]; then
+                sudo apt install jq -y
+            else
+                echo "jq is required to use this function"
+            fi
+            return 1
+        else
+            response=$(curl -X POST "https://pr-107.theunico.it/api/agents/$1/completions" \
+            -H "Authorization: Bearer $2" \
+            -H "Content-Type: application/json" \
+            -d '{"query": "ciao, cosa è unico? Spiegami tutto nel dettaglio", "model": "gemini-2.0-flash"}')
 
+            clean_response=$(echo "$response" | tr -d '\000-\037')
+            
+            echo -e "$clean_response" | jq -c '.text' | awk 'NR==1{print "\033[0;31m" $0 "\033[0m"} NR==2{print "\033[0;32m" $0 "\033[0m"}'
+        fi
+    }
 
-    #New Alias
-    alias update='command sudo apt update && sudo apt upgrade -y'
-    alias cls='clear'
-    alias clear='clear && generate_message'
-    #alias install='command sudo apt install -y' add automated install, pass params
-
-
-    #file alias
-    alias -s txt=code
-    alias -s py=code
-    alias -s json=code
-    alias -s pcapng=wireshark
-    alias -s py=code
-    alias -s html=code
-    alias -s js=code
-    alias -s css=code
 
     # usability
     export HISTFILE=~/.zsh_history
@@ -120,7 +145,3 @@
     setopt hist_ignore_dups
     setopt hist_ignore_all_dups
     setopt share_history
-
-    # autocomplete
-    autoload -Uz compinit
-    compinit
