@@ -112,7 +112,7 @@
 
     unico(){
         if [[ $1 == "-h" || $1 == "" ]]; then
-            echo "Usage: unico <agent_uuid> <api_key>"
+            echo "Usage: unico <agent_id> <api_key>"
         elif ! dpkg -s curl &> /dev/null; then
             echo "curl is not installed"
         elif ! dpkg -s jq &> /dev/null; then

@@ -1,0 +1,85 @@
+#!/usr/bin/env zsh
+
+HISTFILE="${HOME}/.unicly_history"
+
+typeset -a CMD_LIST
+CMD_LIST=(help exit set show ask)
+
+touch $HISTFILE
+fc -R $HISTFILE 2> /dev/null || true
+
+function echo_error { echo "$@" >&2 }
+
+function do_help(){
+    echo "Available commands:"
+    for cmd in $CMD_LIST; do
+        echo " - $cmd"
+    done
+}
+
+function do_exit(){
+    exit 1
+}
+
+typeset -A STATE
+
+function do_set(){
+    if [[ $# -ne 2 ]]; then
+        echo_error "Usage: set <key> <value>"
+        return 0
+    fi
+    STATE[$1]=$2
+    echo "Set $1 to $2"
+}
+
+function do_show(){
+    if [[ $# -ne 1 ]]; then
+        echo_error "Usage: show <key>"
+        return 1
+    fi
+    if [[ -z ${STATE[$1]} ]]; then
+        echo_error "$1 is not set"
+        return 0
+    fi
+    echo "$1: ${STATE[$1]}"
+}
+
+function do_ask(){
+    if [[ $# -ne 1 ]]; then
+        echo "Usage: ask <question> <model>"
+        echo '"\033[0;31m" ATTENTION: api_key and agent_id must be set before using "\033[0;33m"set"\033[0m" command "\033[0m"'
+        return 0
+    fi
+    if [[ -z ${STATE[agent_id]} || -z ${STATE[api_key]} ]]; then
+        echo_error "agent_id and api_key must be set"
+        return 0
+    fi
+}
+
+function handle_cmd(){
+    local -a parts
+    parts=("${(@s/ /)1}")
+    local cmd=$parts[1]
+    local arg=($parts[@]:1)
+    case $cmd in
+        help) do_help ;;
+        exit) do_exit ;;
+        set) do_set $arg ;;
+        show) do_show $arg ;;
+        ask) do_ask $arg ;;
+        *) echo_error "Unknown command: $cmd" ;;
+    esac
+    return 0
+}
+
+function main_loop(){
+    while true; do
+        read "?unicli> " line
+        handle_cmd "$line"
+        fc -W $HISTFILE 2> /dev/null || true
+    done
+}
+
+
+
+
