@@ -1,9 +1,17 @@
 #!/usr/bin/env zsh
 
-HISTFILE="${HOME}/.unicly_history"
+HISTFILE="${HOME}/.unicli_history"
+STATEFILE="${HOME}/.unicli_state"
 
 typeset -a CMD_LIST
-CMD_LIST=(help exit set show ask)
+CMD_LIST=(
+    help
+    exit
+    set
+    show
+    ask
+    info
+)
 
 touch $HISTFILE
 fc -R $HISTFILE 2> /dev/null || true
@@ -24,24 +32,24 @@ function do_exit(){
 typeset -A STATE
 
 function do_set(){
-    if [[ $# -ne 2 ]]; then
+    if [[ $# -lt 3 ]]; then
         echo_error "Usage: set <key> <value>"
         return 0
     fi
-    STATE[$1]=$2
-    echo "Set $1 to $2"
+    STATE[$2]=$3
+    echo "Set $2 to $3"
 }
 
 function do_show(){
-    if [[ $# -ne 1 ]]; then
+    if [[ $# -lt 2 ]]; then
         echo_error "Usage: show <key>"
         return 1
     fi
-    if [[ -z ${STATE[$1]} ]]; then
-        echo_error "$1 is not set"
+    if [[ -z ${STATE[$2]} ]]; then
+        echo_error "$2 is not set"
         return 0
     fi
-    echo "$1: ${STATE[$1]}"
+    echo "$2: ${STATE[$2]}"
 }
 
 function do_ask(){
@@ -56,6 +64,14 @@ function do_ask(){
     fi
 }
 
+do_info(){
+    echo "unicli version 1.0"
+    echo "Author: zakkmccrack"
+    echo "This is a simple CLI tool using zsh."
+    echo "histoy file: $HISTFILE"
+    echo "state file: $STATEFILE"
+}
+
 function handle_cmd(){
     local -a parts
     parts=("${(@s/ /)1}")
@@ -67,6 +83,7 @@ function handle_cmd(){
         set) do_set $arg ;;
         show) do_show $arg ;;
         ask) do_ask $arg ;;
+        info) do_info ;;
         *) echo_error "Unknown command: $cmd" ;;
     esac
     return 0
@@ -76,10 +93,21 @@ function main_loop(){
     while true; do
         read "?unicli> " line
         handle_cmd "$line"
-        fc -W $HISTFILE 2> /dev/null || true
+        echo $line >> $HISTFILE
     done
 }
 
+if (( $# > 0 )); then
+  handle_cmd "${(j: : )argv}"
+  exit $?
+fi
 
+# else: start interactive shell
+echo "Benvenuto in mycli (zsh). Digita 'help'. Ctrl-C o 'exit' per uscire."
+main_loop
+
+# salva la history
+fc -W "$HISTFILE" 2>/dev/null || true
+exit 0
 
 

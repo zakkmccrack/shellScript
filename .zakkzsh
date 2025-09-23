@@ -1,147 +1,173 @@
-    PROMPT='%F{blue}%B%n@%m%f:%F{magenta}%B%~%f %# '
-    
-    #New Alias
-    alias update='command sudo apt update && sudo apt upgrade -y'
-    alias cls='clear'
-    alias clearNoMessage='clear'
-    alias clearMessage='clear && generate_message'
-    #alias install='command sudo apt install -y' add automated install, pass params
+#!/usr/bin/env zsh
+
+# -------------------------------
+# Aliases
+# -------------------------------
+# New Alias
+alias update='sudo apt update && sudo apt upgrade -y'
+alias cls='clear'
+alias clearNoMessage='clear'
+alias clearMessage='clear && generate_message'
+# alias install='sudo apt install -y'    # add automated install, pass params
+
+# file aliases (open with code for these extensions)
+alias -s txt=code
+alias -s py=code
+alias -s json=code
+alias -s pcapng=wireshark
+alias -s html=code
+alias -s js=code
+alias -s css=code
+
+# -------------------------------
+# Functions
+# -------------------------------
+
+generate_message() {
+  local hour
+  hour=$(date +%H)
+  hour=${hour#0}
+
+  local RED=$'\e[0;31m'
+  local GREEN=$'\e[0;32m'
+  local YELLOW=$'\e[0;33m'
+  local BLUE=$'\e[0;34m'
+  local MAGENTA=$'\e[0;35m'
+  local CYAN=$'\e[0;36m'
+  local RESET=$'\e[0m'
+
+  local -a late_night_msgs
+  late_night_msgs=(
+    "${RED}Wth are you doing awake, go to sleep hasshole -_-${RESET}"
+    "${RED}You should be dreaming, not staring at a terminal… (╯︵╰,)${RESET}"
+    "${RED}It's way too late… don't make me tuck you in ( ￣︿￣)${RESET}"
+    "${RED}Sleep deprivation isn't a flex, go to bed! (눈_눈)${RESET}"
+    "${RED}Your pillow misses you, don't be cruel (つ≧▽≦)つ${RESET}"
+    "${RED}Go to bed, or I'll personally turn off your computer ಠ_ಠ${RESET}"
+    "${RED}Still here? Your bed is warm and waiting for you (っ˘ω˘ς )💤${RESET}"
+    "${RED}The stars are watching over you… sleep well, please (✿◕‿◕)${RESET}"
+  )
+
+  local -a morning_msgs
+  morning_msgs=(
+    "${YELLOW}Have you done breakfast? No? Shame on you (¬‿¬)${RESET}"
+    "${YELLOW}Morning! Time to fuel up or you'll regret it later ⊂(￣▽￣)⊃${RESET}"
+    "${YELLOW}No food, no energy. No energy, no life. Go eat. (ノಠ益ಠ)ノ${RESET}"
+    "${YELLOW}Did you sleep well? Or are you a walking zombie? (⊙_◎)${RESET}"
+    "${YELLOW}Mornin’ sunshine! The world says UwU ✨${RESET}"
+    "${YELLOW}Hope you’re feeling rested, if not, go take a nap after coffee (☕˘･ᴗ･˘)${RESET}"
+    "${YELLOW}Wake up, sleepyhead! The universe is waiting for you (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧${RESET}"
+  )
+
+  local -a afternoon_msgs
+  afternoon_msgs=(
+    "${CYAN}Nothin to do uh? -_- Well, at least you're here.${RESET}"
+    "${CYAN}Youre still alive, right? (o_O)${RESET}"
+    "${CYAN}Go touch some grass, nerd ┐(￣ヘ￣)┌${RESET}"
+    "${CYAN}Workin' hard or hardly workin'? (¬‿¬)${RESET}"
+    "${CYAN}Hope your day's going well… If not, wanna talk? (｡• ᵕ •｡) ❤️${RESET}"
+    "${CYAN}Bored? How about a nap? Or a cookie? Both? 🍪${RESET}"
+    "${CYAN}Take a break, even heroes need to rest (ง’̀-'́)ง${RESET}"
+    "${CYAN}If you’re feeling tired, just close your eyes for a moment…${RESET}"
+  )
+
+  local -a evening_msgs
+  evening_msgs=(
+    "${MAGENTA}C’mon, go to bed. You need your beauty sleep ( ˘︹˘ )${RESET}"
+    "${MAGENTA}I see you. Still here. Why? Go rest! (*￣3￣)╭${RESET}"
+    "${MAGENTA}You had a long day, right? Be kind to yourself, okay? (っ'ω')っ${RESET}"
+    "${MAGENTA}Don’t make me come over there and force you to sleep ( ಠ_ಠ)${RESET}"
+    "${MAGENTA}You’re still up? You better be cozy at least! (づ￣ ³￣)づ💤${RESET}"
+    "${MAGENTA}Go to bed, sweetheart. You're important. Take care. (✿˶˘ ³˘)~♥${RESET}"
+    "${MAGENTA}If no one told you today: I'm proud of you. Now rest, please. (っ˘з˘⌣˘)${RESET}"
+    "${MAGENTA}Nighttime is for dreaming, not stressing. Let go, sleep tight. (◡‿◡✿)${RESET}"
+  )
+
+  local -a messages
+  if (( hour < 6 )); then
+    messages=("${(j:,:)late_night_msgs}")
+    messages=( ${late_night_msgs[@]} )
+  elif (( hour < 12 )); then
+    messages=( ${morning_msgs[@]} )
+  elif (( hour < 18 )); then
+    messages=( ${afternoon_msgs[@]} )
+  else
+    messages=( ${evening_msgs[@]} )
+  fi
+
+  local random_index=$(( (RANDOM % ${#messages[@]}) + 1 ))
+  printf '%b\n' "${messages[$random_index]}"
+}
+
+# -------------------------------
+# Config prompt & environment
+# -------------------------------
+export HISTFILE=~/.zsh_history
+export HISTSIZE=10000
+export SAVEHIST=10000
+setopt append_history
+setopt hist_ignore_dups
+setopt hist_ignore_all_dups
+setopt share_history
+
+if [[ $(id -u) -eq 0 ]]; then
+clearNoMessage
+  generate_message
+  PROMPT=$'%F{red}%B%n@%m%f:%F{magenta}%B%~%f\n%#> '
+  RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
+  export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
+  printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
+  printf '%b\n' "Type 'update' for apt update && apt upgrade"
+else
+  clearNoMessage
+  generate_message
+  PROMPT=$'%F{blue}%B%n@%m%f:%F{magenta}%B%~%f\n%#> '
+  RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
+  export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
+  printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
+  printf '%b\n' "Type 'update' for apt update && apt upgrade"
+fi
 
 
-    #file alias
-    alias -s txt=code
-    alias -s py=code
-    alias -s json=code
-    alias -s pcapng=wireshark
-    alias -s py=code
-    alias -s html=code
-    alias -s js=code
-    alias -s css=code
+# -------------------------------
+# Function "unico"
+# -------------------------------
+unico() {
+  if [[ $# -lt 2 ]] || [[ $1 == "-h" ]]; then
+    printf 'Usage: unico <agent_id> <api_key>\n'
+    return 1
+  fi
 
-    #functions
-    generate_message() {
-        hour=$(date +%H)
+  if ! command -v curl >/dev/null 2>&1; then
+    printf 'curl is not installed\n'
+    return 2
+  fi
 
-        # Definizione dei colori ANSI per Zsh
-        RED="\033[0;31m"
-        GREEN="\033[0;32m"
-        YELLOW="\033[0;33m"
-        BLUE="\033[0;34m"
-        MAGENTA="\033[0;35m"
-        CYAN="\033[0;36m"
-        RESET="\033[0m"  # Reset del colore
-
-        # Messaggi per ogni fascia oraria con colori diversi
-        late_night_msgs=(
-            "${RED}Wth are you doing awake, go to sleep hasshole -_-${RESET}"
-            "${RED}You should be dreaming, not staring at a terminal… (╯︵╰,)${RESET}"
-            "${RED}It's way too late… don't make me tuck you in ( ￣︿￣)${RESET}"
-            "${RED}Sleep deprivation isn't a flex, go to bed! (눈_눈)${RESET}"
-            "${RED}Your pillow misses you, don't be cruel (つ≧▽≦)つ${RESET}"
-            "${RED}Go to bed, or I'll personally turn off your computer ಠ_ಠ${RESET}"
-            "${RED}Still here? Your bed is warm and waiting for you (っ˘ω˘ς )💤${RESET}"
-            "${RED}The stars are watching over you… sleep well, please (✿◕‿◕)${RESET}"
-        )
-
-        morning_msgs=(
-            "${YELLOW}Have you done breakfast? No? Shame on you (¬‿¬)${RESET}"
-            "${YELLOW}Morning! Time to fuel up or you'll regret it later ⊂(￣▽￣)⊃${RESET}"
-            "${YELLOW}No food, no energy. No energy, no life. Go eat. (ノಠ益ಠ)ノ${RESET}"
-            "${YELLOW}Did you sleep well? Or are you a walking zombie? (⊙_◎)${RESET}"
-            "${YELLOW}Mornin’ sunshine! The world says UwU ✨${RESET}"
-            "${YELLOW}Hope you’re feeling rested, if not, go take a nap after coffee (☕˘･ᴗ･˘)${RESET}"
-            "${YELLOW}Wake up, sleepyhead! The universe is waiting for you (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧${RESET}"
-        )
-
-        afternoon_msgs=(
-            "${CYAN}Nothin to do uh? -_- Well, at least you're here.${RESET}"
-            "${CYAN}Youre still alive, right? (o_O)${RESET}"
-            "${CYAN}Go touch some grass, nerd ┐(￣ヘ￣)┌${RESET}"
-            "${CYAN}Workin' hard or hardly workin'? (¬‿¬)${RESET}"
-            "${CYAN}Hope your day's going well… If not, wanna talk? (｡• ᵕ •｡) ❤️${RESET}"
-            "${CYAN}Bored? How about a nap? Or a cookie? Both? 🍪${RESET}"
-            "${CYAN}Take a break, even heroes need to rest (ง’̀-'́)ง${RESET}"
-            "${CYAN}If you’re feeling tired, just close your eyes for a moment… ${RESET}"
-        )
-
-        evening_msgs=(
-            "${MAGENTA}C’mon, go to bed. You need your beauty sleep ( ˘︹˘ )${RESET}"
-            "${MAGENTA}I see you. Still here. Why? Go rest! (*￣3￣)╭${RESET}"
-            "${MAGENTA}You had a long day, right? Be kind to yourself, okay? (っ'ω')っ${RESET}"
-            "${MAGENTA}Don’t make me come over there and force you to sleep ( ಠ_ಠ)${RESET}"
-            "${MAGENTA}You’re still up? You better be cozy at least! (づ￣ ³￣)づ💤${RESET}"
-            "${MAGENTA}Go to bed, sweetheart. You're important. Take care. (✿˶˘ ³˘)~♥${RESET}"
-            "${MAGENTA}If no one told you today: I'm proud of you. Now rest, please. (っ˘з(˘⌣˘ )${RESET}"
-            "${MAGENTA}Nighttime is for dreaming, not stressing. Let go, sleep tight. (◡‿◡✿)${RESET}"
-        )
-
-        # Determina l'array di frasi da usare
-        if [ "$hour" -lt 6 ]; then
-            messages=("${late_night_msgs[@]}")
-        elif [ "$hour" -lt 12 ]; then
-            messages=("${morning_msgs[@]}")
-        elif [ "$hour" -lt 18 ]; then
-            messages=("${afternoon_msgs[@]}")
-        else
-            messages=("${evening_msgs[@]}")
-        fi
-
-        # Seleziona un messaggio casuale e lo stampa
-        random_index=$(( RANDOM % ${#messages[@]} ))
-        echo -e "${messages[$random_index]}"
-    }
-
-    #use output
-    if [[ $(id -u) -eq 0 ]]; then
-        clearNoMessage
-        generate_message
-        PROMPT='%F{red}%B%n@%m%f:%F{magenta}%B%~%f %# '
-        RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
-        export LS_COLORS="di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33"
-        echo -e "This shell is $SHELL and it uses autosuggestions"
-        echo -e "Type update for apt update && apt upgrade"
+  if ! command -v jq >/dev/null 2>&1; then
+    printf 'jq is not installed, please install it with: sudo apt install jq -y. Do you want to install it now? (y/n)\n'
+    local key
+    read key
+    if [[ $key == 'y' || $key == 'Y' ]]; then
+      sudo apt install jq -y
     else
-        clearNoMessage
-        generate_message
-        PROMPT='%F{blue}%B%n@%m%f:%F{magenta}%B%~%f %# '
-        RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
-        export LS_COLORS="di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33"
-        echo -e "This shell is $SHELL and it uses autosuggestions"
-        echo -e "Type update for apt update && apt upgrade"
+      printf 'jq is required to use this function\n'
+      return 3
     fi
+  fi
 
-    unico(){
-        if [[ $1 == "-h" || $1 == "" ]]; then
-            echo "Usage: unico <agent_id> <api_key>"
-        elif ! dpkg -s curl &> /dev/null; then
-            echo "curl is not installed"
-        elif ! dpkg -s jq &> /dev/null; then
-            echo "jq is not installed, please install it with: sudo apt install jq -y. Do you want to install it now? (y/n)"
-            read key
-            if [[ $key == "y" || $key == "Y" ]]; then
-                sudo apt install jq -y
-            else
-                echo "jq is required to use this function"
-            fi
-            return 1
-        else
-            response=$(curl -X POST "https://pr-107.theunico.it/api/agents/$1/completions" \
-            -H "Authorization: Bearer $2" \
-            -H "Content-Type: application/json" \
-            -d '{"query": "ciao, cosa è unico? Spiegami tutto nel dettaglio", "model": "gemini-2.0-flash"}')
+  # Chiamata API
+  local response
+  response=$(curl -s -X POST "https://pr-107.theunico.it/api/agents/$1/completions" \
+    -H "Authorization: Bearer $2" \
+    -H "Content-Type: application/json" \
+    -d '{"query": "ciao, cosa è unico? Spiegami tutto nel dettaglio", "model": "gemini-2.0-flash"}')
 
-            clean_response=$(echo "$response" | tr -d '\000-\037')
-            
-            echo -e "$clean_response" | jq -c '.text' | awk 'NR==1{print "\033[0;31m" $0 "\033[0m"} NR==2{print "\033[0;32m" $0 "\033[0m"}'
-        fi
-    }
+  # Pulizia e stampa colorata delle prime due righe (se disponibili)
+  local clean_response
+  clean_response=$(printf '%s' "$response" | tr -d '\000-\037')
+  printf '%s\n' "$clean_response" | jq -r '.text' | awk 'NR==1{printf "\033[0;31m%s\033[0m\n", $0} NR==2{printf "\033[0;32m%s\033[0m\n", $0} NR>2{print}'
+}
 
-
-    # usability
-    export HISTFILE=~/.zsh_history
-    export HISTSIZE=10000
-    export SAVEHIST=10000
-    setopt append_history
-    setopt hist_ignore_dups
-    setopt hist_ignore_all_dups
-    setopt share_history
+# -------------------------------
+# EOF
+# -------------------------------
