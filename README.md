@@ -24,3 +24,11 @@ sudo chmod 755 /usr/local/bin/unicli
 This because '/usr/local/bin/' is the folder where every command is searched when called on shell.
 
 Nothing more, easy peasy
+
+### If you're not using zsh as main shell
+If you don't use zsh as shell and want to change you must paste the following code on your terminal
+'''
+sudo chsh -s /bin/zsh
+sudo chsh -s /bin/zsh root
+'''
+so your main shell will be zsh.

@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+autoload -Uz add-zsh-hook
 
 # -------------------------------
 # Aliases
@@ -110,24 +111,26 @@ setopt hist_ignore_dups
 setopt hist_ignore_all_dups
 setopt share_history
 
-if [[ $(id -u) -eq 0 ]]; then
-clearNoMessage
-  generate_message
-  PROMPT=$'%F{red}%B%n@%m%f:%F{magenta}%B%~%f\n%#> '
-  RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
-  export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
-  printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
-  printf '%b\n' "Type 'update' for apt update && apt upgrade"
-else
-  clearNoMessage
-  generate_message
-  PROMPT=$'%F{blue}%B%n@%m%f:%F{magenta}%B%~%f\n%#> '
-  RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
-  export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
-  printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
-  printf '%b\n' "Type 'update' for apt update && apt upgrade"
-fi
-
+prompt_uid_check(){
+  if [[ $(id -u) -eq 0 ]]; then
+    echo "You are root"
+    clearNoMessage
+    generate_message
+    PROMPT=$'%F{red}%B%n@%m%f:%F{magenta}%B%~%f\n%#> '
+    RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
+    export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
+    printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
+    printf '%b\n' "Type 'update' for apt update && apt upgrade"
+  else
+    clearNoMessage
+    generate_message
+    PROMPT=$'%F{blue}%B%n@%m%f:%F{magenta}%B%~%f\n%#> '
+    RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
+    export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
+    printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
+    printf '%b\n' "Type 'update' for apt update && apt upgrade"
+  fi
+}
 
 # -------------------------------
 # Function "unico"
@@ -167,6 +170,8 @@ unico() {
   clean_response=$(printf '%s' "$response" | tr -d '\000-\037')
   printf '%s\n' "$clean_response" | jq -r '.text' | awk 'NR==1{printf "\033[0;31m%s\033[0m\n", $0} NR==2{printf "\033[0;32m%s\033[0m\n", $0} NR>2{print}'
 }
+
+add-zsh-hook precmd prompt_uid_check
 
 # -------------------------------
 # EOF
