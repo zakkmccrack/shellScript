@@ -16,7 +16,13 @@ CMD_LIST=(
 touch $HISTFILE
 fc -R $HISTFILE 2> /dev/null || true
 
-function echo_error { echo "$@" >&2 }
+
+touch $STATEFILE
+fc -R $STATEFILE 2> /dev/null || true
+
+function echo_error(){
+    echo "$@" >&2 
+}
 
 function do_help(){
     echo "Available commands:"
@@ -53,7 +59,7 @@ function do_show(){
 }
 
 function do_ask(){
-    if [[ $# -ne 1 ]]; then
+    if [[ $# -ne 1 ]] || [[ $1 == "-h"]]; then
         echo "Usage: ask <question> <model>"
         echo '"\033[0;31m" ATTENTION: api_key and agent_id must be set before using "\033[0;33m"set"\033[0m" command "\033[0m"'
         return 0
@@ -62,6 +68,41 @@ function do_ask(){
         echo_error "agent_id and api_key must be set"
         return 0
     fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        printf 'curl is not installed, please install it with: sudo apt install curl -y. Do you want to install it now? (y/n)\n'
+        local key
+        read key
+        if[[ $key == 'y' || $key == 'Y']]; then
+            sudo apt install curl -y
+        else
+            printf 'curl is not installed\n'
+        fi
+        return 2
+    fi
+
+    if ! command -v jq >/dev/null 2>&1; then
+        printf 'jq is not installed, please install it with: sudo apt install jq -y. Do you want to install it now? (y/n)\n'
+        local key
+        read key
+        if [[ $key == 'y' || $key == 'Y' ]]; then
+            sudo apt install jq -y
+        else
+            printf 'jq is required to use this function\n'
+            return 3
+        fi
+    fi
+
+    local response 
+    response=$(curl -s -X PSOT "https://pr-07.theunico.it/api/agents/$agentUuid/completions" \
+    -H "Authorization: Bearer $apiKey" \
+    -H "Content-Type: application/json" \
+    -d '{"query": $1, "model": "gemini-2.0-flash"}'
+    )
+
+    local clean_response
+    clean_response=$(printf '%s' "$response" | tr -d '\000-\037')
+    printf '%s\n' "$clean_response" | jq -r '.text' | awk 'NR==1{printf "%s\n", $0} NR==2{printf "%s\n", $0} NR>2{print}'
 }
 
 do_info(){
@@ -102,7 +143,6 @@ if (( $# > 0 )); then
   exit $?
 fi
 
-# else: start interactive shell
 echo "Benvenuto in mycli (zsh). Digita 'help'. Ctrl-C o 'exit' per uscire."
 main_loop
 

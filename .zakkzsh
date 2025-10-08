@@ -149,12 +149,8 @@ setopt share_history
 if [[ $(id -u) -eq 0 ]]; then
   printf '%b\n%b\n'
   generate_message
-  printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
-  printf '%b\n' "Type 'update' for apt update && apt upgrade"
 else
   generate_message
-  printf '%b\n' "This shell is $SHELL and it uses autosuggestions"
-  printf '%b\n' "Type 'update' for apt update && apt upgrade"
 fi
 
 
@@ -169,45 +165,6 @@ prompt_uid_check(){
     RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
     export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
   fi
-}
-
-# -------------------------------
-# Function "unico"
-# -------------------------------
-unico() {
-  if [[ $# -lt 2 ]] || [[ $1 == "-h" ]]; then
-    printf 'Usage: unico <agent_id> <api_key>\n'
-    return 1
-  fi
-
-  if ! command -v curl >/dev/null 2>&1; then
-    printf 'curl is not installed\n'
-    return 2
-  fi
-
-  if ! command -v jq >/dev/null 2>&1; then
-    printf 'jq is not installed, please install it with: sudo apt install jq -y. Do you want to install it now? (y/n)\n'
-    local key
-    read key
-    if [[ $key == 'y' || $key == 'Y' ]]; then
-      sudo apt install jq -y
-    else
-      printf 'jq is required to use this function\n'
-      return 3
-    fi
-  fi
-
-  # Chiamata API
-  local response
-  response=$(curl -s -X POST "https://pr-107.theunico.it/api/agents/$1/completions" \
-    -H "Authorization: Bearer $2" \
-    -H "Content-Type: application/json" \
-    -d '{"query": "ciao, cosa è unico? Spiegami tutto nel dettaglio", "model": "gemini-2.0-flash"}')
-
-  # Pulizia e stampa colorata delle prime due righe (se disponibili)
-  local clean_response
-  clean_response=$(printf '%s' "$response" | tr -d '\000-\037')
-  printf '%s\n' "$clean_response" | jq -r '.text' | awk 'NR==1{printf "\033[0;31m%s\033[0m\n", $0} NR==2{printf "\033[0;32m%s\033[0m\n", $0} NR>2{print}'
 }
 
 add-zsh-hook precmd prompt_uid_check
