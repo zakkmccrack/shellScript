@@ -23,6 +23,10 @@ alias -s css=code
 # Functions
 # -------------------------------
 
+install(){
+  echo $1
+}
+
 generate_message() {
   local hour
   hour=$(date +%H)
@@ -161,7 +165,7 @@ prompt_uid_check(){
     RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
     export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
   else
-    PROMPT=$'%F{blue}%B%n@%m%f:%F{magenta}%B%~%f%b\n%F{white}#> '
+    PROMPT=$'%F{blue}%B%n@%m%f:%F{green}%B%~%f%b\n%F{white}#> '
     RPROMPT='%F{yellow}%D{%H:%M:%S}%f'
     export LS_COLORS='di=1;34:fi=0;32:ln=1;36:pi=40;33:so=1;35:do=1;33:bd=1;33'
   fi

@@ -25,6 +25,17 @@ This because '/usr/local/bin/' is the folder where every command is searched whe
 
 Nothing more, easy peasy
 
+### Using the shell on other folder
+If you've done a fork and are messing with this script it can be more easy to run put the following command inside the  zshrc file
+```
+if [[ $(id -u) -eq 0 ]]; then
+    source "{path_to_github_folder}/github/shellScript/.zakkzsh"
+else
+    source "$HOME/github/shellScript/.zakkzsh"
+fi
+```
+In this way you can just copy if, change the path and live change the CLI without doing any other change
+
 ### If you're not using zsh as main shell
 If you don't use zsh as shell and want to change you must paste the following code on your terminal
 '''
